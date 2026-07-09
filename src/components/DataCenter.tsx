@@ -15,7 +15,7 @@ export const DataCenter: React.FC<DataCenterProps> = ({ expenses, onResetDatabas
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(expenses, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', 'spenda_expense_ledger.json');
+    downloadAnchor.setAttribute('download', 'ajay_expense_ledger.json');
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -39,7 +39,7 @@ export const DataCenter: React.FC<DataCenterProps> = ({ expenses, onResetDatabas
     const encodedUri = encodeURI(csvContent);
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', encodedUri);
-    downloadAnchor.setAttribute('download', 'spenda_expense_ledger.csv');
+    downloadAnchor.setAttribute('download', 'ajay_expense_ledger.csv');
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

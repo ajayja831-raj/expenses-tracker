@@ -17,20 +17,20 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
   // Pre-seed mock accounts database if empty
   useEffect(() => {
-    const existingAccounts = localStorage.getItem('spenda_accounts');
+    const existingAccounts = localStorage.getItem('ajay_accounts');
     if (!existingAccounts) {
       const demoAccount: Account = {
         email: 'demo@company.com',
         password: 'password',
         companyName: 'Acme Corp'
       };
-      localStorage.setItem('spenda_accounts', JSON.stringify([demoAccount]));
+      localStorage.setItem('ajay_accounts', JSON.stringify([demoAccount]));
     }
   }, []);
 
   const getAccounts = (): Account[] => {
     try {
-      const accountsJson = localStorage.getItem('spenda_accounts');
+      const accountsJson = localStorage.getItem('ajay_accounts');
       return accountsJson ? JSON.parse(accountsJson) : [];
     } catch {
       return [];
@@ -109,7 +109,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       };
 
       const updatedAccounts = [...accounts, newAccount];
-      localStorage.setItem('spenda_accounts', JSON.stringify(updatedAccounts));
+      localStorage.setItem('ajay_accounts', JSON.stringify(updatedAccounts));
 
       setSuccessMsg('Account created successfully! Logging you in...');
       setTimeout(() => {
@@ -132,7 +132,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           <div className="bg-gradient-to-tr from-violet-600 to-indigo-600 p-3 rounded-2xl shadow-xl shadow-violet-600/20">
             <DollarSign className="w-7 h-7 text-white" />
           </div>
-          <h2 className="text-3xl font-extrabold font-display text-white tracking-tight">Spenda</h2>
+          <h2 className="text-3xl font-extrabold font-display text-white tracking-tight">Ajay</h2>
         </div>
         <h3 className="text-center text-sm font-semibold uppercase tracking-wider text-slate-400">
           Company Expense Management

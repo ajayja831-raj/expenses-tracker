@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <DollarSign className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold font-display tracking-tight text-white leading-none">Spenda</h1>
+            <h1 className="text-xl font-bold font-display tracking-tight text-white leading-none">Ajay</h1>
             <span className="text-xs text-slate-400 font-medium">Expense Tracker</span>
           </div>
         </div>

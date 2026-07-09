@@ -15,13 +15,13 @@ import { INITIAL_BUDGET, INITIAL_EXPENSES } from './mockData';
 function App() {
   // Authentication State
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('spenda_current_user');
+    const saved = localStorage.getItem('ajay_current_user');
     return saved ? JSON.parse(saved) : null;
   });
 
   // Global database of all expenses across all users
   const [allExpenses, setAllExpenses] = useState<Expense[]>(() => {
-    const saved = localStorage.getItem('spenda_expenses');
+    const saved = localStorage.getItem('ajay_expenses');
     if (saved) {
       return JSON.parse(saved);
     } else {
@@ -30,7 +30,7 @@ function App() {
         ...exp,
         userEmail: 'demo@company.com'
       }));
-      localStorage.setItem('spenda_expenses', JSON.stringify(seeded));
+      localStorage.setItem('ajay_expenses', JSON.stringify(seeded));
       return seeded;
     }
   });
@@ -54,13 +54,13 @@ function App() {
   // Sync session and database state when user changes
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('spenda_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('ajay_current_user', JSON.stringify(currentUser));
       // Load user-specific budget
-      const savedBudget = localStorage.getItem(`spenda_budget_${currentUser.email}`);
+      const savedBudget = localStorage.getItem(`ajay_budget_${currentUser.email}`);
       setMonthlyBudget(savedBudget ? Number(savedBudget) : INITIAL_BUDGET);
 
       // Load user-specific department budgets
-      const savedDeptBudgets = localStorage.getItem(`spenda_dept_budgets_${currentUser.email}`);
+      const savedDeptBudgets = localStorage.getItem(`ajay_dept_budgets_${currentUser.email}`);
       if (savedDeptBudgets) {
         setDeptBudgets(JSON.parse(savedDeptBudgets));
       } else {
@@ -72,16 +72,16 @@ function App() {
           HR: 4000
         };
         setDeptBudgets(defaultDepts);
-        localStorage.setItem(`spenda_dept_budgets_${currentUser.email}`, JSON.stringify(defaultDepts));
+        localStorage.setItem(`ajay_dept_budgets_${currentUser.email}`, JSON.stringify(defaultDepts));
       }
     } else {
-      localStorage.removeItem('spenda_current_user');
+      localStorage.removeItem('ajay_current_user');
     }
   }, [currentUser]);
 
   // Sync expenses updates to localStorage
   useEffect(() => {
-    localStorage.setItem('spenda_expenses', JSON.stringify(allExpenses));
+    localStorage.setItem('ajay_expenses', JSON.stringify(allExpenses));
   }, [allExpenses]);
 
   // Filter expenses for the current active user
@@ -144,7 +144,7 @@ function App() {
   const handleSaveBudget = (newBudget: number) => {
     if (!currentUser) return;
     setMonthlyBudget(newBudget);
-    localStorage.setItem(`spenda_budget_${currentUser.email}`, newBudget.toString());
+    localStorage.setItem(`ajay_budget_${currentUser.email}`, newBudget.toString());
   };
 
   const handleUpdateDeptBudget = (dept: Department, limit: number) => {
@@ -154,7 +154,7 @@ function App() {
       [dept]: limit
     };
     setDeptBudgets(updated);
-    localStorage.setItem(`spenda_dept_budgets_${currentUser.email}`, JSON.stringify(updated));
+    localStorage.setItem(`ajay_dept_budgets_${currentUser.email}`, JSON.stringify(updated));
   };
 
   const handleResetDatabase = () => {
@@ -173,7 +173,7 @@ function App() {
     
     // Reset user budget
     setMonthlyBudget(INITIAL_BUDGET);
-    localStorage.removeItem(`spenda_budget_${currentUser.email}`);
+    localStorage.removeItem(`ajay_budget_${currentUser.email}`);
     
     // Reset department budgets
     const defaultDepts: Record<Department, number> = {
@@ -184,7 +184,7 @@ function App() {
       HR: 4000
     };
     setDeptBudgets(defaultDepts);
-    localStorage.setItem(`spenda_dept_budgets_${currentUser.email}`, JSON.stringify(defaultDepts));
+    localStorage.setItem(`ajay_dept_budgets_${currentUser.email}`, JSON.stringify(defaultDepts));
   };
 
   // If not logged in, render the login/signup screen
