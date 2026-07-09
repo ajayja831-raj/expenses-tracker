@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import type { Expense } from '../types';
-import { Download, Database, RotateCcw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { 
+  Download, 
+  Database, 
+  RotateCcw, 
+  AlertTriangle, 
+  CheckCircle,
+  Copy,
+  Check,
+  Terminal
+} from 'lucide-react';
 
 interface DataCenterProps {
   expenses: Expense[];
@@ -10,6 +19,7 @@ interface DataCenterProps {
 export const DataCenter: React.FC<DataCenterProps> = ({ expenses, onResetDatabase }) => {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [resetCompleted, setResetCompleted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const exportToJson = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(expenses, null, 2));
@@ -61,13 +71,69 @@ export const DataCenter: React.FC<DataCenterProps> = ({ expenses, onResetDatabas
     setShowConfirmReset(false);
   };
 
+  const sqlSetupCode = `-- 1. Create Profile / Budgets table
+create table public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  company_name text not null,
+  monthly_limit numeric default 50000 not null,
+  dept_budgets jsonb default '{"Engineering":15000,"Marketing":10000,"Sales":8000,"Operations":5000,"HR":4000}'::jsonb not null
+);
+
+-- 2. Create Expenses table
+create table public.expenses (
+  id uuid default gen_random_uuid() primary key,
+  amount numeric not null,
+  date date not null,
+  category text not null,
+  merchant text not null,
+  description text not null,
+  department text not null,
+  user_id uuid references auth.users on delete cascade not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 3. Enable Row Level Security (RLS)
+alter table public.profiles enable row level security;
+alter table public.expenses enable row level security;
+
+-- 4. Create RLS Policies for Profiles
+create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
+
+-- 5. Create RLS Policies for Expenses
+create policy "Users can view own expenses" on public.expenses for select using (auth.uid() = user_id);
+create policy "Users can insert own expenses" on public.expenses for insert with check (auth.uid() = user_id);
+create policy "Users can update own expenses" on public.expenses for update using (auth.uid() = user_id);
+create policy "Users can delete own expenses" on public.expenses for delete using (auth.uid() = user_id);
+
+-- 6. Trigger to automate profile creation on user signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, company_name)
+  values (new.id, coalesce(new.raw_user_meta_data->>'company_name', 'My Company'));
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(sqlSetupCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Overview */}
       <div className="glass-panel rounded-2xl p-6">
         <h3 className="text-lg font-bold font-display text-white mb-1">Workspace Data Center</h3>
         <p className="text-xs text-slate-400">
-          Manage your expense ledger data, download backups, or reset your environment.
+          Manage your expense ledger data, download backups, or configure cloud settings.
         </p>
       </div>
 
@@ -153,6 +219,46 @@ export const DataCenter: React.FC<DataCenterProps> = ({ expenses, onResetDatabas
               </button>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Supabase SQL Setup Card */}
+      <div className="glass-panel rounded-2xl p-6 hover-lift border border-transparent">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-slate-900 border border-slate-800 text-teal-400 rounded-xl">
+              <Terminal className="w-5 h-5" />
+            </div>
+            <h4 className="text-base font-bold font-display text-slate-200">Supabase Cloud Database Setup</h4>
+          </div>
+          <button
+            onClick={copyToClipboard}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-xl border ${
+              copied 
+                ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400' 
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border-slate-750/50 hover:text-white'
+            } transition-all duration-200 text-[10px] font-bold cursor-pointer`}
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>Copied SQL!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy SQL Code</span>
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-xs text-slate-400 leading-relaxed mb-4">
+          Copy and run this SQL script in your Supabase project's **SQL Editor** to automatically generate your tables, set up relational joins, enable Row Level Security, and configure automation triggers for signup synchronization.
+        </p>
+        <div className="relative bg-slate-950 rounded-xl border border-slate-900 overflow-hidden">
+          <pre className="text-[10px] text-slate-450 p-4 font-mono overflow-x-auto max-h-48 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-slate-950 text-left">
+            {sqlSetupCode}
+          </pre>
         </div>
       </div>
     </div>
